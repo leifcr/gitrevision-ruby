@@ -57,6 +57,18 @@ The result will be
 
 The rakefile is setup to use [travelling-ruby](https://github.com/phusion/traveling-ruby) to build packages.
 
+To package:
+
+```
+rake package                 # Package your app
+rake package:bundle_install  # Install gems to local directory
+rake package:linux:x86       # Package your app for Linux x86
+rake package:linux:x86_64    # Package your app for Linux x86_64
+rake package:osx             # Package your app for OS X
+rake package:win32           # Package your app for Windows x86
+```
+
+
 ## License
 
 Licensed under the MIT license
