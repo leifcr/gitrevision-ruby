@@ -53,6 +53,11 @@ The result will be
 #endif // _VERSION_H_
 ```
 
+## Packaging
+
+The rakefile is setup to use [travelling-ruby](https://github.com/phusion/traveling-ruby) to build packages.
+
 ## License
 
 Licensed under the MIT license
+
