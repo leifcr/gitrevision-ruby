@@ -3,7 +3,7 @@ require 'bundler/setup'
 
 PACKAGE_NAME = "gitrevision"
 VERSION = "1.0.0"
-TRAVELING_RUBY_VERSION = "20150210-2.1.5"
+TRAVELING_RUBY_VERSION = "20150715-2.2.2"
 
 desc "Package your app"
 task :package => ['package:linux:x86', 'package:linux:x86_64', 'package:osx', 'package:win32']
@@ -33,9 +33,6 @@ namespace :package do
 
   desc "Install gems to local directory"
   task :bundle_install do
-    if RUBY_VERSION !~ /^2\.1\./
-      abort "You can only 'bundle install' using Ruby 2.1, because that's what Traveling Ruby uses."
-    end
     sh "rm -rf packaging/tmp"
     sh "mkdir packaging/tmp"
     sh "cp Gemfile Gemfile.lock packaging/tmp/"
