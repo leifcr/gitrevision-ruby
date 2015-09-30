@@ -12,30 +12,46 @@ class GitRevision
   # Format of tags must be either v1.0.1 or 1.0.1 for major: 1, minor: 0, revision: 1
   # (Semantic versioning)
   #
-  def initialize(input_file, output_file, git_repo, verbose)
-    @input_file,  @verbose = input_file, verbose
-    @git_repo = init_git_repo(git_repo)
+  def initialize(input_file, output_file, git_repo, verbose = false, debug = false)
+    @verbose, @debug = verbose, debug
+    puts "GitRevision: initialize Input: #{input_file} Output: #{output_file} Repo: #{git_repo}" if @verbose
+    @input_file = input_file_with_path(input_file)
+    @git_repo = open_git_repo(git_repo)
     @output_file = real_output_file(output_file)
     self
   end
 
-  def init_git_repo(git_repo)
+  def input_file_with_path(input_file)
+    if !File.exist?(input_file)
+      raise ArgumentError, "Input file #{File.expand_path(input_file)} is not found"
+    end
+    File.expand_path(input_file)
+  end
+
+  def open_git_repo(git_repo)
+    puts "GitRevision: open_git_repo #{git_repo}" if @debug
     if git_repo.nil?
       grepo_path = File.expand_path(Dir.pwd)
     else
       grepo_path = File.expand_path(git_repo)
     end
-    f = find_git_repo_upwards(Pathname.new(grepo_path))
-    raise StandardError, "No git repository found in path #{grepo_path}, found #{f}"
-    Git.open(f)
+    @repo_path = find_git_repo_upwards(Pathname.new(grepo_path))
+    raise StandardError, "No git repository found in path #{grepo_path}" if @repo_path.nil?
+    Git.open(@repo_path)
+  end
+
+  def repo_path
+    @repo_path
   end
 
   def is_git_repo?(pn)
-    return true if Dir.exists?(pn.join(".git"))
+    puts "GitRevision: is_git_repo #{pn.to_s}" if @debug
+    return true if Dir.exist?(pn.join(".git"))
     false
   end
 
   def find_git_repo_upwards(pn)
+    puts "GitRevision: find_git_repo_upwards #{pn.to_s}" if @debug
     return pn.to_s if is_git_repo?(pn)
     return nil if pn.root?
     find_git_repo_upwards(pn.split.first)
@@ -43,19 +59,21 @@ class GitRevision
 
   def real_output_file(output_file)
     return @input_file.chomp.chop if (output_file.nil?)
-    output_file
+    File.expand_path(output_file)
+  end
+
+  def output_file
+    @output_file
   end
 
   #
   # Get tag, short hash and long hash in a hash.
   #
-  def git_tag_version
+  def tag_version
     v = @git_repo.lib.describe('--long').split('-')
-    puts v.inspect
     tag_version = v[0].split('.')
     tag_version[0].gsub!('v', '')
-    puts tag_version.inspect
-    {
+    r = {
       major: tag_version[0],
       minor: tag_version[1],
       revision: tag_version[2],
@@ -63,6 +81,8 @@ class GitRevision
       long_hash: long_hash,
       changes_since_last_tag: v[1]
     }
+    puts "GitRevision: tag_version #{r.inspect}" if @debug
+    r
   end
 
   #
@@ -78,7 +98,7 @@ class GitRevision
   def create_version_file
     output_f = File.new(@output_file, 'w:UTF-8')
     # Read each line from the file
-    version = git_tag_version
+    version = tag_version
 
     # Process line
     File.readlines(@input_file, encoding: 'UTF-8').each do |line|
@@ -86,6 +106,8 @@ class GitRevision
     end
     # output to file
     output_f.close
+    puts "GitRevision: Created file #{@output_file} from #{@input_file}."
+    puts "GitRevision: version: #{version[:major]}.#{version[:minor]}.#{version[:revision]} short_hash: #{version[:short_hash]} long_hash: #{version[:long_hash]}"
     output_f = nil
   end
 
@@ -111,25 +133,3 @@ module Git
     end
   end
 end
-
-opts = Slop.parse do |o|
-  o.string '-i', '--input', 'input filename (relative to current folder) must end with x after the extension if no output is provided '
-  o.string '-o', '--output', 'output filename (relative to current folder)'
-  o.string '-g', '--gitrepo', 'Git repository'
-  o.bool '-v', '--verbose', 'enable verbose mode'
-  o.on '-h', '--help', 'show help' do
-    puts o
-    exit
-  end
-end
-
-puts opts.to_hash.inspect
-
-raise ArgumentError, 'Missing input file' unless opts.input?
-
-unless opts.output?
-  raise ArgumentError, 'No output file and input file does not end with x' unless opts[:input].end_with?('x')
-end
-
-g = GitRevision.new(opts[:input], opts[:output], opts[:gitrepo], opts.verbose?)
-g.create_version_file

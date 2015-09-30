@@ -1,5 +1,6 @@
 # For Bundler.with_clean_env
 require 'bundler/setup'
+require "#{File.expand_path(File.dirname(__FILE__))}/gitrevision"
 
 PACKAGE_NAME = "gitrevision"
 VERSION = "1.0.0"
@@ -7,6 +8,13 @@ TRAVELING_RUBY_VERSION = "20150715-2.2.2"
 
 desc "Package your app"
 task :package => ['package:linux:x86', 'package:linux:x86_64', 'package:osx', 'package:win32']
+
+desc 'Run Unit Tests'
+task :test do |t|
+  $VERBOSE = true
+
+  require File.dirname(__FILE__) + '/tests/gitrevision_test.rb'
+end
 
 namespace :package do
   namespace :linux do
@@ -66,6 +74,7 @@ def create_package(target, os_type = :unix)
   sh "mkdir #{package_dir}"
   sh "mkdir -p #{package_dir}/lib/app"
   sh "cp gitrevision.rb #{package_dir}/lib/app/"
+  sh "cp command_line.rb #{package_dir}/lib/app/"
   sh "mkdir #{package_dir}/lib/ruby"
   sh "tar -xzf packaging/traveling-ruby-#{TRAVELING_RUBY_VERSION}-#{target}.tar.gz -C #{package_dir}/lib/ruby"
   if os_type == :unix
@@ -91,3 +100,4 @@ def download_runtime(target)
   sh "cd packaging && curl -L -O --fail " +
     "http://d6r77u77i8pq3.cloudfront.net/releases/traveling-ruby-#{TRAVELING_RUBY_VERSION}-#{target}.tar.gz"
 end
+
