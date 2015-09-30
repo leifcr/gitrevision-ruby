@@ -5,6 +5,7 @@
 #
 require 'git'
 require 'slop'
+require 'pathname'
 
 class GitRevision
   # Note:
@@ -20,11 +21,24 @@ class GitRevision
 
   def init_git_repo(git_repo)
     if git_repo.nil?
-      f = File.expand_path('.')
+      grepo_path = File.expand_path(Dir.pwd)
     else
-      f = File.expand_path(git_repo)
+      grepo_path = File.expand_path(git_repo)
     end
+    f = find_git_repo_upwards(Pathname.new(grepo_path))
+    raise StandardError, "No git repository found in path #{grepo_path}, found #{f}"
     Git.open(f)
+  end
+
+  def is_git_repo?(pn)
+    return true if Dir.exists?(pn.join(".git"))
+    false
+  end
+
+  def find_git_repo_upwards(pn)
+    return pn.to_s if is_git_repo?(pn)
+    return nil if pn.root?
+    find_git_repo_upwards(pn.split.first)
   end
 
   def real_output_file(output_file)
