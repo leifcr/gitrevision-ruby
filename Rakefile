@@ -65,7 +65,7 @@ def create_package(target, os_type = :unix)
   sh "rm -rf #{package_dir}"
   sh "mkdir #{package_dir}"
   sh "mkdir -p #{package_dir}/lib/app"
-  sh "cp gitrevision_ruby.rb #{package_dir}/lib/app/"
+  sh "cp gitrevision.rb #{package_dir}/lib/app/"
   sh "mkdir #{package_dir}/lib/ruby"
   sh "tar -xzf packaging/traveling-ruby-#{TRAVELING_RUBY_VERSION}-#{target}.tar.gz -C #{package_dir}/lib/ruby"
   if os_type == :unix
