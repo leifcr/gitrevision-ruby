@@ -11,12 +11,18 @@ opts = Slop.parse do |o|
   end
 end
 
-puts opts.to_hash.inspect
-
-raise ArgumentError, 'Missing input file' unless opts.input?
+unless opts.input?
+  puts opts
+  puts "\n"
+  raise ArgumentError, 'Missing input file'
+end
 
 unless opts.output?
-  raise ArgumentError, 'No output file and input file does not end with x' unless opts[:input].end_with?('x')
+  unless opts[:input].end_with?('x')
+    puts opts
+    puts "\n"
+    raise ArgumentError, 'No output file and input file does not end with x'
+  end
 end
 
 g = GitRevision.new(opts[:input], opts[:output], opts[:gitrepo], opts.verbose?, opts.debug?)
