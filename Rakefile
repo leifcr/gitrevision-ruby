@@ -3,7 +3,7 @@ require 'bundler/setup'
 require "#{File.expand_path(File.dirname(__FILE__))}/gitrevision"
 
 PACKAGE_NAME = "gitrevision"
-VERSION = "1.0.0"
+VERSION = "1.0.3"
 TRAVELING_RUBY_VERSION = "20150715-2.2.2"
 
 desc "Package your app"
