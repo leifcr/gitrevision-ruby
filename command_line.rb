@@ -1,4 +1,4 @@
-require 'gitrevision'
+require "#{File.expand_path(File.dirname(__FILE__))}/gitrevision"
 opts = Slop.parse do |o|
   o.string '-i', '--input', 'input filename (relative to current folder) must end with x after the extension if no output is provided '
   o.string '-o', '--output', 'output filename (relative to current folder)'
