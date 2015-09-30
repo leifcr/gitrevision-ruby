@@ -36,3 +36,8 @@ build/
 *.sublime-workspace
 version.h
 
+*.tar.gz
+*.zip
+/packaging/vendor/
+.rake_tasks
+
